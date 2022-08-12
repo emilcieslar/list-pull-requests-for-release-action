@@ -7,7 +7,8 @@ import setOutput from './set-output';
 
 // Get a list of tags and get the previous tag before the one that’s provided
 const releaseTag = getInput('release_tag');
-const tags = execSync(`git tag`).toString().trim().split('\n');
+const tags = execSync('git tag').toString().trim().split('\n');
+console.log(tags);
 const releaseTagIndex = tags.findIndex(tag => tag === releaseTag);
 // TODO: Handle when there's no previous tag
 const previousTag = tags[releaseTagIndex - 1];
