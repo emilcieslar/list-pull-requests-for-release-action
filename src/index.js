@@ -1,5 +1,6 @@
 import { execSync } from 'child_process';
 import * as github from '@actions/github';
+import * as core from '@actions/core';
 
 import getInput from './get-input';
 import setOutput from './set-output';
@@ -7,8 +8,9 @@ import setOutput from './set-output';
 
 // Get a list of tags and get the previous tag before the one that’s provided
 const releaseTag = getInput('release_tag');
+core.debug(`Release tag: "${releaseTag}"`);
 const tags = execSync('git tag').toString().trim().split('\n');
-console.log(tags);
+core.debug(`Tags: "${JSON.stringify(tags)}"`);
 const releaseTagIndex = tags.findIndex(tag => tag === releaseTag);
 // TODO: Handle when there's no previous tag
 const previousTag = tags[releaseTagIndex - 1];
