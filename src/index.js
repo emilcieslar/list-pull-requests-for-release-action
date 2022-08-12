@@ -9,6 +9,7 @@ import setOutput from './set-output';
 const releaseTag = getInput('release_tag');
 const tags = execSync(`git tag`).toString().trim().split('\n');
 const releaseTagIndex = tags.findIndex(tag => tag === releaseTag);
+// TODO: Handle when there's no previous tag
 const previousTag = tags[releaseTagIndex - 1];
 
 // Get a list of commits for a given tag by specifying a range from previous tag to the current tag
