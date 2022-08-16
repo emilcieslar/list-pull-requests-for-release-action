@@ -6,18 +6,33 @@ import getInput, { getInputWithoutDebug } from './get-input';
 import setOutput from './set-output';
 
 
-// Get a list of tags and get the previous tag before the one that’s provided
-const releaseTag = getInput('release_tag');
-const tags = execSync('git tag').toString().trim().split('\n');
-const releaseTagIndex = tags.findIndex(tag => tag === releaseTag);
-// TODO: Handle when there's no previous tag
-const previousTag = tags[releaseTagIndex - 1];
-
-// Get a list of commits for a given tag by specifying a range from previous tag to the current tag
-const listOfCommits = execSync(`git rev-list ${previousTag}...${releaseTag}`).toString().trim().split('\n');
-
 const token = getInputWithoutDebug('token');
 const octokit = github.getOctokit(token);
+
+
+/**
+ * Get a list of commit SHAs between two tags, the one that's provided and the other
+ * that comes just before the one that's provided.
+ *
+ * @return {string[]} - array of commit SHAs
+ */
+function getListOfCommits() {
+  // Get a list of tags and get the previous tag before the one that’s provided
+  const releaseTag = getInput('release_tag');
+  const tags = execSync('git tag').toString().trim().split('\n');
+  const releaseTagIndex = tags.findIndex(tag => tag === releaseTag);
+
+  // If there's no previous tag, we leave it empty and we'll take all commits
+  // that come before the provided tag.
+  const previousTag = tags[releaseTagIndex - 1] || '';
+  core.debug(`Previous tag: "${previousTag}"`);
+
+  // Get a list of commits for a given tag by specifying a range from previous tag to the current tag
+  const listOfCommits = execSync(`git rev-list ${previousTag}...${releaseTag}`).toString().trim().split('\n');
+  core.debug(listOfCommits);
+
+  return listOfCommits;
+}
 
 
 /**
@@ -46,7 +61,8 @@ const octokit = github.getOctokit(token);
  * @param {string[]} commitSHAs - list of commit SHAs
  * @return {undefined} - there's nothing to return, we just set github outputs.
  */
-async function setPRsOutputs() {
+ async function setPRsOutputs() {
+  const listOfCommits = getListOfCommits();
   const allPRsPromises = listOfCommits.map(async commitSha => {
     const prs = await getPRsForCommit(octokit, commitSha);
     const prsBodies = prs.map(pr => pr.body).filter(Boolean).join('\n');
@@ -74,7 +90,4 @@ async function setPRsOutputs() {
 }
 
 
-const action = setPRsOutputs;
-
-
-export default action;
+export default setPRsOutputs;
