@@ -8,6 +8,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Check the tags
+        run: git tag
       - uses: ./
         with:
           release_tag: "1.0.1"
