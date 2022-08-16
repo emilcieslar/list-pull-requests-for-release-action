@@ -4,6 +4,9 @@ inputs:
   release_tag:
     description: 'Release tag for which we want to retrieve the pull requests'
     required: true
+  token:
+    description: 'Github token'
+    required: true
 outputs:
   prs:
     description: 'List of associated PRs'

@@ -8,4 +8,9 @@ function getInputWithDebug(key) {
 }
 
 
+export function getInputWithoutDebug(key) {
+  return core.getInput(key);
+}
+
+
 export default getInputWithDebug;
