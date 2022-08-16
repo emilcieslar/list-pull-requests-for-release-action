@@ -1,0 +1,18 @@
+name: 'List pull requests between two tags'
+description: 'Lists pull requests associated with a certain release (between two tags)'
+inputs:
+  release_tag:
+    description: 'Release tag for which we want to retrieve the pull requests'
+    required: true
+  token:
+    description: 'Github token'
+    required: true
+outputs:
+  prs:
+    description: 'List of associated PRs'
+  prs_bodies:
+    description: 'Concatenated bodies of all PRs'
+
+runs:
+  using: 'node16'
+  main: './dist/bundle.js'

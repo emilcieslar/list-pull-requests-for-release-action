@@ -1,0 +1,16 @@
+name: Test action workflow
+
+on: [pull_request]
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: ./
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release_tag: "1.0.1"
