@@ -19,6 +19,7 @@ const listOfCommits = execSync(`git rev-list ${previousTag}...${releaseTag}`).to
 const token = getInputWithoutDebug('token');
 const octokit = github.getOctokit(token);
 
+
 /**
  * Retrieves PRs for provided commit_sha
  *
@@ -61,12 +62,12 @@ async function setPRsOutputs() {
   const allPRsBodies = allPRsItems.reduce((bodies, prItem) => {
     // If body is not empty, add it to the final string
     if (prItem.prsBodies) {
-      bodies = `${bodies}\n${prItem.prsBodies}`;
+      bodies = `${bodies}${prItem.prsBodies}\n`;
     }
     return bodies;
   }, '');
 
-  const allPRs = allPRsItems.map(prItem => prItem.pr);
+  const allPRs = allPRsItems.reduce((allPRsArr,prItem) => [...allPRsArr, ...prItem.prs], []);
 
   setOutput('prs', allPRs);
   setOutput('prs_bodies', allPRsBodies);
