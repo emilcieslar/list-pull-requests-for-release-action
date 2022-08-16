@@ -27,7 +27,7 @@ const octokit = github.getOctokit(token);
  *
  * @return {Object[]} - array of PRs
  */
- async function getPRs(octokit, commitSha) {
+ async function getPRsForCommit(octokit, commitSha) {
   const result = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
     owner: github.context.repo.owner,
     repo: github.context.repo.repo,
@@ -36,28 +36,44 @@ const octokit = github.getOctokit(token);
   return result.data;
 }
 
-async function getPRsBodies() {
-  // For each commit, get associated PRs and then their bodies so that we can retrieve
-  // the jira ticket IDs.
-  const allPrsPromises = listOfCommits.map(async commitSha => {
-    const prs = await getPRs(octokit, commitSha);
-    const prsBodies = prs.map(pr => pr.body).filter(Boolean);
 
-    if (prsBodies.length) {
-      return prsBodies;
-    }
+/**
+ * For each commit that is provided, get a list of PRs and then process it so that
+ * we set outputs with a list of PRs and a string that contains concatenated bodies
+ * of those PRs.
+ *
+ * @param {string[]} commitSHAs - list of commit SHAs
+ * @return {undefined} - there's nothing to return, we just set github outputs.
+ */
+async function setPRsOutputs() {
+  const allPRsPromises = listOfCommits.map(async commitSha => {
+    const prs = await getPRsForCommit(octokit, commitSha);
+    const prsBodies = prs.map(pr => pr.body).filter(Boolean).join('\n');
 
-    return null;
+    return {
+      prs,
+      prsBodies,
+    };
   });
 
-  const allPrsBodies = await Promise.all(allPrsPromises);
+  const allPRsItems = await Promise.all(allPRsPromises);
 
-  // setOutput('prs', )
-  setOutput('prs_bodies', allPrsBodies.filter(Boolean))
+  const allPRsBodies = allPRsItems.reduce((bodies, prItem) => {
+    // If body is not empty, add it to the final string
+    if (prItem.prsBodies) {
+      bodies = `${bodies}\n${prItem.prsBodies}`;
+    }
+    return bodies;
+  }, '');
+
+  const allPRs = allPRsItems.map(prItem => prItem.pr);
+
+  setOutput('prs', allPRs);
+  setOutput('prs_bodies', allPRsBodies);
 }
 
 
-const action = getPRsBodies;
+const action = setPRsOutputs;
 
 
 export default action;
